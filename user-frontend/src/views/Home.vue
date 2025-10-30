@@ -177,7 +177,18 @@ export default {
   methods: {
     handleMenuSelect(index) {
       this.activeMenu = index
-      this.$message.info(`功能开发中: ${index}`)
+      const routeMap = {
+        'dashboard': '/home',
+        'additives': '/additive-query',
+        'inventory': '/inventory-query',
+        'usage': '/usage-register',
+        'warnings': '/warning'
+      }
+      if (routeMap[index]) {
+        this.$router.push(routeMap[index])
+      } else {
+        this.$message.info(`功能开发中: ${index}`)
+      }
     },
     handleCommand(command) {
       if (command === 'logout') {
@@ -195,7 +206,16 @@ export default {
       }
     },
     handleAction(action) {
-      this.$message.info(`${action} 功能开发中`)
+      const actionMap = {
+        'search': '/additive-query',
+        'inventory': '/inventory-query',
+        'record': '/usage-register'
+      }
+      if (actionMap[action]) {
+        this.$router.push(actionMap[action])
+      } else {
+        this.$message.info(`${action} 功能开发中`)
+      }
     }
   }
 }
