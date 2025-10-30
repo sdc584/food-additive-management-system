@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统状态检查</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .service-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .service-card {
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+        .service-card.running {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+        .service-card.stopped {
+            border-color: #f44336;
+            background: #fef1f0;
+        }
+        .service-card.checking {
+            border-color: #ff9800;
+            background: #fff8f0;
+        }
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .service-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        .service-status {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .service-status.running {
+            background: #4caf50;
+            color: white;
+        }
+        .service-status.stopped {
+            background: #f44336;
+            color: white;
+        }
+        .service-status.checking {
+            background: #ff9800;
+            color: white;
+        }
+        .service-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .service-url {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 500;
+        }
+        .service-url a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .service-url a:hover {
+            text-decoration: underline;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .summary {
+            text-align: center;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .summary-text {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 系统状态检查</h1>
+        <p class="subtitle">食品添加剂管理系统 - 服务状态监控</p>
+        
+        <div class="summary">
+            <div class="summary-text" id="summaryText">正在检查服务状态...</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn" onclick="checkAllServices()" id="checkBtn">
+                <span id="btnText">刷新状态</span>
+            </button>
+            <button class="btn btn-secondary" onclick="openTestPage()">打开API测试</button>
+        </div>
+
+        <div class="service-grid">
+            <div class="service-card checking" id="service-user-backend">
+                <div class="service-header">
+                    <div class="service-name">📦 用户端后端</div>
+                    <div class="service-status checking">检查中...</div>
+                </div>
+                <div class="service-info">端口: 8081</div>
+                <div class="service-url">
+                    <a href="http://localhost:8081/api/user/foodAdditives" target="_blank">
+                        http://localhost:8081/api/user
+                    </a>
+                </div>
+            </div>
+
+            <div class="service-card checking" id="service-admin-backend">
+                <div class="service-header">
+                    <div class="service-name">📦 管理端后端</div>
+                    <div class="service-status checking">检查中...</div>
+                </div>
+                <div class="service-info">端口: 8082</div>
+                <div class="service-url">
+                    <a href="http://localhost:8082/api/admin/foodAdditives" target="_blank">
+                        http://localhost:8082/api/admin
+                    </a>
+                </div>
+            </div>
+
+            <div class="service-card checking" id="service-user-frontend">
+                <div class="service-header">
+                    <div class="service-name">🎨 用户端前端</div>
+                    <div class="service-status checking">检查中...</div>
+                </div>
+                <div class="service-info">端口: 8080</div>
+                <div class="service-url">
+                    <a href="http://localhost:8080" target="_blank">
+                        http://localhost:8080
+                    </a>
+                </div>
+            </div>
+
+            <div class="service-card checking" id="service-admin-frontend">
+                <div class="service-header">
+                    <div class="service-name">🎨 管理端前端</div>
+                    <div class="service-status checking">检查中...</div>
+                </div>
+                <div class="service-info">端口: 8083</div>
+                <div class="service-url">
+                    <a href="http://localhost:8083" target="_blank">
+                        http://localhost:8083
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const services = [
+            { id: 'user-backend', name: '用户端后端', url: 'http://localhost:8081/api/user/foodAdditives' },
+            { id: 'admin-backend', name: '管理端后端', url: 'http://localhost:8082/api/admin/foodAdditives' },
+            { id: 'user-frontend', name: '用户端前端', url: 'http://localhost:8080' },
+            { id: 'admin-frontend', name: '管理端前端', url: 'http://localhost:8083' }
+        ];
+
+        async function checkService(service) {
+            const card = document.getElementById(`service-${service.id}`);
+            const statusEl = card.querySelector('.service-status');
+            
+            try {
+                const response = await fetch(service.url, { 
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    card.className = 'service-card running';
+                    statusEl.className = 'service-status running';
+                    statusEl.textContent = '✅ 运行中';
+                    return true;
+                } else {
+                    card.className = 'service-card stopped';
+                    statusEl.className = 'service-status stopped';
+                    statusEl.textContent = '❌ 已停止';
+                    return false;
+                }
+            } catch (error) {
+                card.className = 'service-card stopped';
+                statusEl.className = 'service-status stopped';
+                statusEl.textContent = '❌ 未启动';
+                return false;
+            }
+        }
+
+        async function checkAllServices() {
+            const btn = document.getElementById('checkBtn');
+            const btnText = document.getElementById('btnText');
+            const summaryText = document.getElementById('summaryText');
+            
+            btn.disabled = true;
+            btnText.innerHTML = '检查中... <span class="loading"></span>';
+            summaryText.textContent = '正在检查服务状态...';
+
+            let runningCount = 0;
+            for (const service of services) {
+                const isRunning = await checkService(service);
+                if (isRunning) runningCount++;
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            btn.disabled = false;
+            btnText.textContent = '刷新状态';
+
+            if (runningCount === 4) {
+                summaryText.textContent = '🎉 所有服务运行正常！';
+            } else if (runningCount > 0) {
+                summaryText.textContent = `⚠️ ${runningCount}/4 个服务正在运行`;
+            } else {
+                summaryText.textContent = '❌ 所有服务都未启动';
+            }
+        }
+
+        function openTestPage() {
+            window.open('test-fixed-apis.html', '_blank');
+        }
+
+        // Auto check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkAllServices, 1000);
+            // Auto refresh every 10 seconds
+            setInterval(checkAllServices, 10000);
+        });
+    </script>
+</body>
+</html>
+

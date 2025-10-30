@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API接口测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+            color: #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 食品添加剂管理系统 - API接口测试</h1>
+        
+        <div class="info">
+            <strong>📌 系统信息：</strong><br>
+            用户端后端：<a href="http://localhost:8081/api/user" target="_blank">http://localhost:8081/api/user</a><br>
+            管理端后端：<a href="http://localhost:8082/api/admin" target="_blank">http://localhost:8082/api/admin</a><br>
+            默认账号：admin / 123456
+        </div>
+
+        <!-- 用户端测试 -->
+        <div class="test-section">
+            <h2>👤 用户端后端测试</h2>
+            <button onclick="testUserLogin()">测试用户端登录</button>
+            <button onclick="testUserInfo()">获取用户信息（需先登录）</button>
+            <div id="userResult" class="result" style="display:none;"></div>
+        </div>
+
+        <!-- 管理端测试 -->
+        <div class="test-section">
+            <h2>🔧 管理端后端测试</h2>
+            <button onclick="testAdminLogin()">测试管理端登录</button>
+            <button onclick="testAdminInfo()">获取管理员信息（需先登录）</button>
+            <div id="adminResult" class="result" style="display:none;"></div>
+        </div>
+
+        <!-- 数据库测试 -->
+        <div class="test-section">
+            <h2>📊 数据库连接测试</h2>
+            <button onclick="testDatabase()">测试数据库（查询添加剂列表）</button>
+            <div id="dbResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let userToken = '';
+        let adminToken = '';
+
+        // 测试用户端登录
+        async function testUserLogin() {
+            const resultDiv = document.getElementById('userResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = '正在测试用户端登录...';
+
+            try {
+                const response = await fetch('http://localhost:8081/api/user/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: '123456'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    userToken = data.data.token;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 用户端登录成功！\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 登录失败：\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请求失败：' + error.message;
+            }
+        }
+
+        // 测试管理端登录
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('adminResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = '正在测试管理端登录...';
+
+            try {
+                const response = await fetch('http://localhost:8082/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: '123456'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    adminToken = data.data.token;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 管理端登录成功！\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 登录失败：\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请求失败：' + error.message;
+            }
+        }
+
+        // 获取用户信息
+        async function testUserInfo() {
+            const resultDiv = document.getElementById('userResult');
+            resultDiv.style.display = 'block';
+            
+            if (!userToken) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请先登录！';
+                return;
+            }
+
+            resultDiv.className = 'result';
+            resultDiv.textContent = '正在获取用户信息...';
+
+            try {
+                const response = await fetch('http://localhost:8081/api/user/auth/info', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': userToken
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 获取用户信息成功！\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 获取失败：\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请求失败：' + error.message;
+            }
+        }
+
+        // 获取管理员信息
+        async function testAdminInfo() {
+            const resultDiv = document.getElementById('adminResult');
+            resultDiv.style.display = 'block';
+            
+            if (!adminToken) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请先登录！';
+                return;
+            }
+
+            resultDiv.className = 'result';
+            resultDiv.textContent = '正在获取管理员信息...';
+
+            try {
+                const response = await fetch('http://localhost:8082/api/admin/auth/info', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': adminToken
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ 获取管理员信息成功！\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 获取失败：\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请求失败：' + error.message;
+            }
+        }
+
+        // 测试数据库
+        async function testDatabase() {
+            const resultDiv = document.getElementById('dbResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = '正在查询数据库...';
+
+            // 先登录获取token
+            if (!adminToken) {
+                try {
+                    const loginResponse = await fetch('http://localhost:8082/api/admin/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: 'admin',
+                            password: '123456'
+                        })
+                    });
+                    const loginData = await loginResponse.json();
+                    if (loginData.code === 200) {
+                        adminToken = loginData.data.token;
+                    }
+                } catch (error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 登录失败：' + error.message;
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('http://localhost:8082/api/admin/foodAdditives', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': adminToken
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    resultDiv.className = 'result success';
+                    const count = Array.isArray(data.data) ? data.data.length : 0;
+                    resultDiv.textContent = '✅ 数据库查询成功！\n\n' +
+                        '共查询到 ' + count + ' 条记录\n\n' +
+                        JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 查询失败：\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请求失败：' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
+
