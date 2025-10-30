@@ -202,7 +202,7 @@ export default {
           this.$message.success('已退出登录')
         })
       } else if (command === 'profile') {
-        this.$message.info('个人信息功能开发中')
+        this.$router.push('/profile')
       }
     },
     handleAction(action) {

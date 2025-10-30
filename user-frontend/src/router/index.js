@@ -47,6 +47,12 @@ const routes = [
     name: 'WarningView',
     component: () => import('@/views/WarningView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/Profile.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

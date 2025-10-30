@@ -81,6 +81,13 @@ const routes = [
         name: 'OperationLog',
         component: () => import('@/views/OperationLog.vue'),
         meta: { title: '操作日志', icon: 'el-icon-tickets' }
+      },
+      // 用户管理
+      {
+        path: 'user-manage',
+        name: 'UserManage',
+        component: () => import('@/views/UserManage.vue'),
+        meta: { title: '用户管理', icon: 'el-icon-user' }
       }
     ]
   }
