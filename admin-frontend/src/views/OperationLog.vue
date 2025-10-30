@@ -106,7 +106,7 @@
 </template>
 
 <script>
-import { getOperationLogList, getOperationLogById, exportOperationLog } from '@/api/operationLog'
+import { getOperationLogList, getOperationLogDetail, exportOperationLog } from '@/api/operationLog'
 
 export default {
   name: 'OperationLog',
@@ -175,7 +175,7 @@ export default {
     },
     async handleView(row) {
       try {
-        const res = await getOperationLogById(row.logId)
+        const res = await getOperationLogDetail(row.logId)
         if (res.code === 200) {
           this.detailData = res.data
           this.detailVisible = true

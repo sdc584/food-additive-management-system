@@ -17,3 +17,13 @@ export function getOperationLogDetail(id) {
   })
 }
 
+// 导出操作日志
+export function exportOperationLog(params) {
+  return request({
+    url: '/api/admin/operationLogs/export',
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
+}
+

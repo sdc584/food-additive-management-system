@@ -135,7 +135,7 @@
 </template>
 
 <script>
-import { getUsageRecordList, getUsageRecordById, deleteUsageRecord, auditUsageRecord } from '@/api/usageRecord'
+import { getUsageRecordList, getUsageRecordDetail, deleteUsageRecord, auditUsageRecord } from '@/api/usageRecord'
 
 export default {
   name: 'UsageRecord',
@@ -202,7 +202,7 @@ export default {
     },
     async handleView(row) {
       try {
-        const res = await getUsageRecordById(row.recordId)
+        const res = await getUsageRecordDetail(row.recordId)
         if (res.code === 200) {
           this.detailData = res.data
           this.detailVisible = true

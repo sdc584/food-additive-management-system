@@ -43,3 +43,12 @@ export function deleteUsageRecord(id) {
   })
 }
 
+// 审核使用记录
+export function auditUsageRecord(id, data) {
+  return request({
+    url: `/api/admin/usageRecords/${id}/audit`,
+    method: 'put',
+    data
+  })
+}
+

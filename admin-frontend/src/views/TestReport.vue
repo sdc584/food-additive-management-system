@@ -123,8 +123,8 @@
 </template>
 
 <script>
-import { getTestReportList, getTestReportById, createTestReport, deleteTestReport } from '@/api/testReport'
-import { getAdditiveList } from '@/api/additive'
+import { getTestReportList, getTestReportDetail, addTestReport, deleteTestReport } from '@/api/testReport'
+import { getFoodAdditiveList } from '@/api/foodAdditive'
 
 export default {
   name: 'TestReport',
@@ -200,7 +200,7 @@ export default {
     },
     async loadAdditiveList() {
       try {
-        const res = await getAdditiveList()
+        const res = await getFoodAdditiveList()
         if (res.code === 200) {
           this.additiveList = res.data || []
         }
@@ -228,7 +228,7 @@ export default {
     },
     async handleView(row) {
       try {
-        const res = await getTestReportById(row.reportId)
+        const res = await getTestReportDetail(row.reportId)
         if (res.code === 200) {
           this.detailData = res.data
           this.detailVisible = true
@@ -243,7 +243,7 @@ export default {
 
         this.submitting = true
         try {
-          const res = await createTestReport(this.formData)
+          const res = await addTestReport(this.formData)
           if (res.code === 200) {
             this.$message.success('新增成功')
             this.dialogVisible = false
