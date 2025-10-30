@@ -98,11 +98,25 @@
 </template>
 
 <script>
+/**
+ * 个人中心页面
+ * 功能：
+ * 1. 展示用户个人信息
+ * 2. 编辑个人信息（真实姓名、电话、邮箱、部门）
+ * 3. 修改密码
+ *
+ * @author 系统
+ * @since 2025-01-01
+ */
 import { getUserProfile, updateUserProfile, changePassword } from '@/api/profile'
 
 export default {
   name: 'Profile',
   data() {
+    /**
+     * 确认密码验证器
+     * 验证两次输入的密码是否一致
+     */
     const validateConfirmPassword = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请再次输入密码'))
@@ -114,15 +128,19 @@ export default {
     }
 
     return {
+      // 提交状态标志
       submitting: false,
       passwordSubmitting: false,
+      // 用户信息
       userInfo: {},
+      // 编辑表单数据
       formData: {
         realName: '',
         phone: '',
         email: '',
         department: ''
       },
+      // 密码修改表单数据
       passwordData: {
         oldPassword: '',
         newPassword: '',
@@ -153,15 +171,23 @@ export default {
       }
     }
   },
+  /**
+   * 组件创建时加载用户信息
+   */
   created() {
     this.loadUserProfile()
   },
   methods: {
+    /**
+     * 加载用户个人信息
+     * 从后端获取当前登录用户的详细信息
+     */
     async loadUserProfile() {
       try {
         const res = await getUserProfile()
         if (res.code === 200) {
           this.userInfo = res.data
+          // 初始化编辑表单数据
           this.formData = {
             realName: res.data.realName || '',
             phone: res.data.phone || '',
@@ -173,6 +199,10 @@ export default {
         this.$message.error('加载用户信息失败')
       }
     },
+    /**
+     * 更新个人信息
+     * 提交编辑后的个人信息到后端
+     */
     handleUpdateProfile() {
       this.$refs.profileForm.validate(async (valid) => {
         if (!valid) return false
@@ -182,6 +212,7 @@ export default {
           const res = await updateUserProfile(this.formData)
           if (res.code === 200) {
             this.$message.success('保存成功')
+            // 重新加载用户信息
             this.loadUserProfile()
             // 更新Vuex中的用户信息
             this.$store.commit('setUserInfo', { ...this.userInfo, ...this.formData })
@@ -193,6 +224,10 @@ export default {
         }
       })
     },
+    /**
+     * 重置编辑表单
+     * 恢复到原始用户信息
+     */
     handleResetForm() {
       this.formData = {
         realName: this.userInfo.realName || '',
@@ -202,6 +237,11 @@ export default {
       }
       this.$refs.profileForm.clearValidate()
     },
+    /**
+     * 修改密码
+     * 验证原密码并更新为新密码
+     * 修改成功后自动退出登录
+     */
     handleChangePassword() {
       this.$refs.passwordForm.validate(async (valid) => {
         if (!valid) return false
@@ -227,6 +267,10 @@ export default {
         }
       })
     },
+    /**
+     * 重置密码表单
+     * 清空所有密码输入框
+     */
     handleResetPassword() {
       this.passwordData = {
         oldPassword: '',

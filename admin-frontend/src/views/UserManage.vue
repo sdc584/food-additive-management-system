@@ -120,29 +120,48 @@
 </template>
 
 <script>
+/**
+ * 用户管理页面
+ * 功能：
+ * 1. 用户列表展示（分页、搜索、筛选）
+ * 2. 新增用户
+ * 3. 编辑用户信息
+ * 4. 删除用户
+ * 5. 重置用户密码
+ * 6. 用户状态管理（启用/禁用）
+ *
+ * @author 系统
+ * @since 2025-01-01
+ */
 import { getUserList, createUser, updateUser, deleteUser, resetPassword } from '@/api/user'
 
 export default {
   name: 'UserManage',
   data() {
     return {
+      // 加载状态
       loading: false,
       submitting: false,
+      // 搜索表单
       searchForm: {
         username: '',
         realName: '',
         role: null,
         status: null
       },
+      // 表格数据
       tableData: [],
+      // 分页信息
       pagination: {
         currentPage: 1,
         pageSize: 10,
         total: 0
       },
+      // 对话框控制
       dialogVisible: false,
       dialogTitle: '新增用户',
       isEdit: false,
+      // 表单数据
       formData: {
         userId: null,
         username: '',
