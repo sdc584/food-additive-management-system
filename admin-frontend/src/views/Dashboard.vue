@@ -63,7 +63,7 @@
     <el-row :gutter="20">
       <!-- 快捷功能区 -->
       <el-col :xs="24" :sm="24" :lg="12">
-        <div class="quick-actions-section">
+        <div class="quick-actions-section same-height">
           <h3 class="section-title">快捷功能</h3>
           <el-row :gutter="20">
             <el-col :xs="12" :sm="12" :lg="12">
@@ -104,12 +104,12 @@
 
       <!-- 添加剂分类占比图表 -->
       <el-col :xs="24" :sm="24" :lg="12">
-        <div class="chart-wrapper chart-wrapper-tall">
+        <div class="chart-wrapper same-height">
           <div class="chart-title">
             <i class="el-icon-pie-chart"></i>
             添加剂分类占比
           </div>
-          <div id="categoryChart" style="height: 380px;"></div>
+          <div id="categoryChart" class="chart-content"></div>
         </div>
       </el-col>
     </el-row>
@@ -484,6 +484,11 @@ export default {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+/* 统一高度 */
+.same-height {
+  height: 460px;
+}
+
 /* 快捷功能区域 */
 .quick-actions-section {
   background: white;
@@ -491,6 +496,8 @@ export default {
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+  display: flex;
+  flex-direction: column;
 
   .section-title {
     margin: 0 0 20px 0;
@@ -502,7 +509,7 @@ export default {
   .action-card {
     background: #f8f9fa;
     border-radius: 8px;
-    padding: 30px 20px;
+    padding: 25px 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
@@ -563,6 +570,8 @@ export default {
   margin-bottom: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+  display: flex;
+  flex-direction: column;
 
   .chart-title {
     font-size: 16px;
@@ -576,6 +585,11 @@ export default {
       margin-right: 8px;
       color: #667eea;
     }
+  }
+
+  .chart-content {
+    flex: 1;
+    min-height: 380px;
   }
 }
 
