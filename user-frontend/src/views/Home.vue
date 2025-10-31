@@ -78,7 +78,7 @@
                 <i class="el-icon-s-goods"></i>
               </div>
               <div class="stat-info">
-                <div class="stat-value">156</div>
+                <div class="stat-value">{{ stats.additiveCount }}</div>
                 <div class="stat-label">添加剂种类</div>
               </div>
             </div>
@@ -89,7 +89,7 @@
                 <i class="el-icon-s-data"></i>
               </div>
               <div class="stat-info">
-                <div class="stat-value">2,345</div>
+                <div class="stat-value">{{ formatNumber(stats.inventoryTotal) }}</div>
                 <div class="stat-label">库存总量(kg)</div>
               </div>
             </div>
@@ -100,7 +100,7 @@
                 <i class="el-icon-warning"></i>
               </div>
               <div class="stat-info">
-                <div class="stat-value">8</div>
+                <div class="stat-value">{{ stats.warningCount }}</div>
                 <div class="stat-label">预警信息</div>
               </div>
             </div>
@@ -111,7 +111,7 @@
                 <i class="el-icon-s-order"></i>
               </div>
               <div class="stat-info">
-                <div class="stat-value">432</div>
+                <div class="stat-value">{{ stats.usageCount }}</div>
                 <div class="stat-label">本月使用</div>
               </div>
             </div>
@@ -162,11 +162,19 @@
 </template>
 
 <script>
+import { getDashboardStats } from '@/api/dashboard'
+
 export default {
   name: 'Home',
   data() {
     return {
-      activeMenu: 'dashboard'
+      activeMenu: 'dashboard',
+      stats: {
+        additiveCount: 0,
+        inventoryTotal: 0,
+        warningCount: 0,
+        usageCount: 0
+      }
     }
   },
   computed: {
@@ -174,7 +182,27 @@ export default {
       return this.$store.state.userInfo || {}
     }
   },
+  mounted() {
+    this.loadStats()
+  },
   methods: {
+    // 加载统计数据
+    async loadStats() {
+      try {
+        const res = await getDashboardStats()
+        if (res.code === 200) {
+          this.stats = res.data
+        }
+      } catch (error) {
+        console.error('加载统计数据失败', error)
+        this.$message.error('加载统计数据失败')
+      }
+    },
+    // 格式化数字（添加千分位）
+    formatNumber(num) {
+      if (num === null || num === undefined) return '0'
+      return num.toLocaleString('zh-CN', { maximumFractionDigits: 2 })
+    },
     handleMenuSelect(index) {
       this.activeMenu = index
       const routeMap = {
