@@ -109,9 +109,7 @@
             <i class="el-icon-pie-chart"></i>
             添加剂分类占比
           </div>
-          <div id="categoryChart" style="height: 380px; display: flex; align-items: center; justify-content: center; color: #999;">
-            图表功能开发中...
-          </div>
+          <div id="categoryChart" style="height: 380px;"></div>
         </div>
       </el-col>
     </el-row>
@@ -143,7 +141,8 @@
 </template>
 
 <script>
-import { getDashboardStats, getRecentLogs } from '@/api/dashboard'
+import { getDashboardStats, getRecentLogs, getCategoryStats } from '@/api/dashboard'
+import * as echarts from 'echarts'
 
 export default {
   name: 'Dashboard',
@@ -156,13 +155,19 @@ export default {
         operationCount: 0
       },
       recentLogs: [],
-      loading: false
+      loading: false,
+      categoryChart: null
     }
   },
   mounted() {
     this.loadStats()
     this.loadRecentLogs()
     this.initCharts()
+  },
+  beforeDestroy() {
+    if (this.categoryChart) {
+      this.categoryChart.dispose()
+    }
   },
   methods: {
     // 加载统计数据
@@ -223,12 +228,95 @@ export default {
       const seconds = String(date.getSeconds()).padStart(2, '0')
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     },
-    initCharts() {
-      // 这里可以初始化图表，暂时留空
-      console.log('图表初始化')
+    async initCharts() {
+      // 初始化分类占比饼图
+      await this.$nextTick()
+      const chartDom = document.getElementById('categoryChart')
+      if (!chartDom) {
+        console.error('图表容器未找到')
+        return
+      }
+
+      this.categoryChart = echarts.init(chartDom)
+
+      // 加载分类统计数据
+      try {
+        const res = await getCategoryStats()
+        if (res.code === 200 && res.data && res.data.length > 0) {
+          const option = {
+            tooltip: {
+              trigger: 'item',
+              formatter: '{a} <br/>{b}: {c} ({d}%)'
+            },
+            legend: {
+              orient: 'vertical',
+              right: '10%',
+              top: 'center',
+              textStyle: {
+                fontSize: 12
+              }
+            },
+            series: [
+              {
+                name: '添加剂分类',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                center: ['35%', '50%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                  borderRadius: 10,
+                  borderColor: '#fff',
+                  borderWidth: 2
+                },
+                label: {
+                  show: false,
+                  position: 'center'
+                },
+                emphasis: {
+                  label: {
+                    show: true,
+                    fontSize: 20,
+                    fontWeight: 'bold'
+                  }
+                },
+                labelLine: {
+                  show: false
+                },
+                data: res.data,
+                color: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#ffa751', '#ffe259', '#4facfe', '#00f2fe']
+              }
+            ]
+          }
+          this.categoryChart.setOption(option)
+        } else {
+          // 没有数据时显示提示
+          chartDom.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #999;">暂无分类数据</div>'
+        }
+      } catch (error) {
+        console.error('加载分类统计数据失败', error)
+        chartDom.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #999;">加载失败</div>'
+      }
+
+      // 响应式调整
+      window.addEventListener('resize', () => {
+        if (this.categoryChart) {
+          this.categoryChart.resize()
+        }
+      })
     },
     handleQuickAction(action) {
-      this.$message.info(`${action} 功能开发中`)
+      const routeMap = {
+        'search': '/additive/list',
+        'inventory': '/inventory/list',
+        'record': '/usage/list',
+        'report': '/test-report/list'
+      }
+
+      if (routeMap[action]) {
+        this.$router.push(routeMap[action])
+      } else {
+        this.$message.info(`${action} 功能开发中`)
+      }
     }
   },
   components: {

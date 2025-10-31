@@ -3,10 +3,12 @@ package com.foodadditive.admin.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.foodadditive.admin.annotation.OperationLog;
 import com.foodadditive.admin.common.Result;
+import com.foodadditive.admin.entity.AdditiveCategory;
 import com.foodadditive.admin.entity.FoodAdditive;
 import com.foodadditive.admin.entity.Inventory;
 import com.foodadditive.admin.entity.Supplier;
 import com.foodadditive.admin.entity.Warning;
+import com.foodadditive.admin.service.AdditiveCategoryService;
 import com.foodadditive.admin.service.FoodAdditiveService;
 import com.foodadditive.admin.service.InventoryService;
 import com.foodadditive.admin.service.OperationLogService;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 仪表盘Controller
@@ -49,6 +53,9 @@ public class DashboardController {
 
     @Autowired
     private OperationLogService operationLogService;
+
+    @Autowired
+    private AdditiveCategoryService additiveCategoryService;
 
     /**
      * 获取统计数据
@@ -94,6 +101,36 @@ public class DashboardController {
             @RequestParam(required = false, defaultValue = "5") Integer limit) {
         List<com.foodadditive.admin.entity.OperationLog> logs = operationLogService.getRecentLogs(limit);
         return Result.success(logs);
+    }
+
+    /**
+     * 获取添加剂分类统计数据（用于饼图）
+     */
+    @GetMapping("/category-stats")
+    public Result<List<Map<String, Object>>> getCategoryStats() {
+        List<Map<String, Object>> categoryStats = new ArrayList<>();
+
+        // 获取所有分类
+        List<AdditiveCategory> categories = additiveCategoryService.list();
+
+        // 获取所有添加剂
+        List<FoodAdditive> additives = foodAdditiveService.list();
+
+        // 统计每个分类的添加剂数量
+        for (AdditiveCategory category : categories) {
+            long count = additives.stream()
+                    .filter(additive -> category.getCategoryId().equals(additive.getCategoryId()))
+                    .count();
+
+            if (count > 0) {
+                Map<String, Object> stat = new HashMap<>();
+                stat.put("name", category.getCategoryName());
+                stat.put("value", count);
+                categoryStats.add(stat);
+            }
+        }
+
+        return Result.success(categoryStats);
     }
 }
 

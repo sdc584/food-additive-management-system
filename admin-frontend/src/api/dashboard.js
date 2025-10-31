@@ -21,3 +21,13 @@ export function getRecentLogs(limit = 5) {
   })
 }
 
+/**
+ * 获取添加剂分类统计数据
+ */
+export function getCategoryStats() {
+  return request({
+    url: '/api/admin/dashboard/category-stats',
+    method: 'get'
+  })
+}
+
