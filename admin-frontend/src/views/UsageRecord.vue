@@ -27,44 +27,16 @@
       </div>
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
+        <el-table-column prop="usageNo" label="使用单号" width="150"></el-table-column>
         <el-table-column prop="additiveName" label="添加剂名称" min-width="150"></el-table-column>
-        <el-table-column prop="usageQuantity" label="使用数量" width="100" align="right">
-          <template slot-scope="scope">
-            {{ scope.row.usageQuantity }} {{ scope.row.unit }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="productName" label="产品名称" width="150"></el-table-column>
-        <el-table-column prop="batchNo" label="批次号" width="120"></el-table-column>
+        <el-table-column prop="quantity" label="使用数量" width="100" align="right"></el-table-column>
+        <el-table-column prop="productBatch" label="产品批次" width="120"></el-table-column>
         <el-table-column prop="usageDate" label="使用日期" width="120"></el-table-column>
-        <el-table-column prop="operator" label="操作人" width="100"></el-table-column>
-        <el-table-column prop="auditStatus" label="审核状态" width="100" align="center">
-          <template slot-scope="scope">
-            <el-tag
-              :type="scope.row.auditStatus === 'approved' ? 'success' : scope.row.auditStatus === 'rejected' ? 'danger' : 'warning'"
-              size="small">
-              {{ scope.row.auditStatus === 'approved' ? '已通过' : scope.row.auditStatus === 'rejected' ? '已拒绝' : '待审核' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="220" align="center" fixed="right">
+        <el-table-column prop="department" label="部门" width="120"></el-table-column>
+        <el-table-column label="操作" width="180" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="handleView(scope.row)">查看</el-button>
-            <el-button
-              v-if="scope.row.auditStatus === 'pending'"
-              type="text"
-              size="small"
-              @click="handleAudit(scope.row, 'approved')"
-              style="color: #67C23A;">
-              通过
-            </el-button>
-            <el-button
-              v-if="scope.row.auditStatus === 'pending'"
-              type="text"
-              size="small"
-              @click="handleAudit(scope.row, 'rejected')"
-              style="color: #F56C6C;">
-              拒绝
-            </el-button>
+            <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button type="text" size="small" @click="handleDelete(scope.row)" style="color: #F56C6C;">删除</el-button>
           </template>
         </el-table-column>
@@ -85,22 +57,13 @@
     <!-- 查看详情对话框 -->
     <el-dialog title="使用记录详情" :visible.sync="detailVisible" width="600px">
       <el-descriptions :column="2" border>
+        <el-descriptions-item label="使用单号" :span="2">{{ detailData.usageNo }}</el-descriptions-item>
         <el-descriptions-item label="添加剂名称">{{ detailData.additiveName }}</el-descriptions-item>
-        <el-descriptions-item label="使用数量">{{ detailData.usageQuantity }} {{ detailData.unit }}</el-descriptions-item>
-        <el-descriptions-item label="产品名称">{{ detailData.productName }}</el-descriptions-item>
-        <el-descriptions-item label="批次号">{{ detailData.batchNo }}</el-descriptions-item>
+        <el-descriptions-item label="使用数量">{{ detailData.quantity }}</el-descriptions-item>
+        <el-descriptions-item label="产品批次">{{ detailData.productBatch }}</el-descriptions-item>
         <el-descriptions-item label="使用日期">{{ detailData.usageDate }}</el-descriptions-item>
-        <el-descriptions-item label="操作人">{{ detailData.operator }}</el-descriptions-item>
-        <el-descriptions-item label="使用目的" :span="2">{{ detailData.purpose }}</el-descriptions-item>
-        <el-descriptions-item label="审核状态">
-          <el-tag
-            :type="detailData.auditStatus === 'approved' ? 'success' : detailData.auditStatus === 'rejected' ? 'danger' : 'warning'"
-            size="small">
-            {{ detailData.auditStatus === 'approved' ? '已通过' : detailData.auditStatus === 'rejected' ? '已拒绝' : '待审核' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="审核人">{{ detailData.auditor || '未审核' }}</el-descriptions-item>
-        <el-descriptions-item label="审核意见" :span="2">{{ detailData.auditRemark || '无' }}</el-descriptions-item>
+        <el-descriptions-item label="部门">{{ detailData.department }}</el-descriptions-item>
+        <el-descriptions-item label="使用目的" :span="2">{{ detailData.usagePurpose || '无' }}</el-descriptions-item>
         <el-descriptions-item label="备注" :span="2">{{ detailData.remark || '无' }}</el-descriptions-item>
         <el-descriptions-item label="创建时间" :span="2">{{ detailData.createTime }}</el-descriptions-item>
       </el-descriptions>
@@ -109,33 +72,58 @@
       </div>
     </el-dialog>
 
-    <!-- 审核对话框 -->
-    <el-dialog title="审核使用记录" :visible.sync="auditVisible" width="500px">
-      <el-form ref="auditForm" :model="auditForm" label-width="100px">
-        <el-form-item label="审核结果">
-          <el-tag :type="auditForm.auditStatus === 'approved' ? 'success' : 'danger'" size="medium">
-            {{ auditForm.auditStatus === 'approved' ? '通过' : '拒绝' }}
-          </el-tag>
+    <!-- 新增/编辑对话框 -->
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="600px">
+      <el-form ref="usageForm" :model="formData" :rules="formRules" label-width="100px">
+        <el-form-item label="使用单号" prop="usageNo">
+          <el-input v-model="formData.usageNo" placeholder="请输入使用单号"></el-input>
         </el-form-item>
-        <el-form-item label="审核意见">
-          <el-input
-            v-model="auditForm.auditRemark"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入审核意见">
-          </el-input>
+        <el-form-item label="添加剂" prop="additiveId">
+          <el-select v-model="formData.additiveId" placeholder="请选择添加剂" filterable style="width: 100%">
+            <el-option
+              v-for="item in additiveList"
+              :key="item.additiveId"
+              :label="item.additiveName"
+              :value="item.additiveId">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="使用数量" prop="quantity">
+          <el-input-number v-model="formData.quantity" :min="0" :precision="2" style="width: 100%"></el-input-number>
+        </el-form-item>
+        <el-form-item label="产品批次" prop="productBatch">
+          <el-input v-model="formData.productBatch" placeholder="请输入产品批次"></el-input>
+        </el-form-item>
+        <el-form-item label="使用日期" prop="usageDate">
+          <el-date-picker
+            v-model="formData.usageDate"
+            type="date"
+            placeholder="选择使用日期"
+            value-format="yyyy-MM-dd"
+            style="width: 100%">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="部门" prop="department">
+          <el-input v-model="formData.department" placeholder="请输入部门"></el-input>
+        </el-form-item>
+        <el-form-item label="使用目的">
+          <el-input v-model="formData.usagePurpose" type="textarea" :rows="3" placeholder="请输入使用目的"></el-input>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="formData.remark" type="textarea" :rows="3" placeholder="请输入备注"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="auditVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleAuditSubmit" :loading="submitting">确定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitting">确定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getUsageRecordList, getUsageRecordDetail, deleteUsageRecord, auditUsageRecord } from '@/api/usageRecord'
+import { getUsageRecordList, getUsageRecordDetail, deleteUsageRecord, addUsageRecord, updateUsageRecord } from '@/api/usageRecord'
+import { getFoodAdditiveList } from '@/api/foodAdditive'
 
 export default {
   name: 'UsageRecord',
@@ -154,17 +142,36 @@ export default {
         total: 0
       },
       detailVisible: false,
-      auditVisible: false,
+      dialogVisible: false,
+      dialogTitle: '',
+      dialogType: '',
       detailData: {},
-      auditForm: {
-        recordId: null,
-        auditStatus: '',
-        auditRemark: ''
-      }
+      formData: {
+        usageId: null,
+        usageNo: '',
+        additiveId: null,
+        quantity: 0,
+        usageDate: '',
+        usagePurpose: '',
+        productBatch: '',
+        userId: null,
+        department: '',
+        remark: ''
+      },
+      formRules: {
+        usageNo: [{ required: true, message: '请输入使用单号', trigger: 'blur' }],
+        additiveId: [{ required: true, message: '请选择添加剂', trigger: 'change' }],
+        quantity: [{ required: true, message: '请输入使用数量', trigger: 'blur' }],
+        productBatch: [{ required: true, message: '请输入产品批次', trigger: 'blur' }],
+        usageDate: [{ required: true, message: '请选择使用日期', trigger: 'change' }],
+        department: [{ required: true, message: '请输入部门', trigger: 'blur' }]
+      },
+      additiveList: []
     }
   },
   created() {
     this.loadData()
+    this.loadAdditiveList()
   },
   methods: {
     async loadData() {
@@ -185,6 +192,16 @@ export default {
         this.loading = false
       }
     },
+    async loadAdditiveList() {
+      try {
+        const res = await getFoodAdditiveList()
+        if (res.code === 200) {
+          this.additiveList = res.data || []
+        }
+      } catch (error) {
+        console.error('加载添加剂列表失败:', error)
+      }
+    },
     handleSearch() {
       this.pagination.currentPage = 1
       this.loadData()
@@ -198,40 +215,71 @@ export default {
       this.loadData()
     },
     handleAdd() {
-      this.$message.info('新增使用记录功能开发中...')
+      this.dialogType = 'add'
+      this.dialogTitle = '新增使用记录'
+      this.formData = {
+        usageId: null,
+        usageNo: '',
+        additiveId: null,
+        quantity: 0,
+        usageDate: '',
+        usagePurpose: '',
+        productBatch: '',
+        userId: null,
+        department: '',
+        remark: ''
+      }
+      this.dialogVisible = true
+    },
+    handleEdit(row) {
+      this.dialogType = 'edit'
+      this.dialogTitle = '编辑使用记录'
+      this.formData = { ...row }
+      this.dialogVisible = true
+    },
+    async handleSubmit() {
+      this.$refs.usageForm.validate(async (valid) => {
+        if (!valid) {
+          return false
+        }
+
+        this.submitting = true
+        try {
+          let res
+          if (this.dialogType === 'add') {
+            res = await addUsageRecord(this.formData)
+          } else {
+            res = await updateUsageRecord(this.formData)
+          }
+
+          if (res.code === 200) {
+            this.$message.success(this.dialogType === 'add' ? '新增成功' : '更新成功')
+            this.dialogVisible = false
+            this.loadData()
+          }
+        } catch (error) {
+          this.$message.error(this.dialogType === 'add' ? '新增失败' : '更新失败')
+        } finally {
+          this.submitting = false
+        }
+      })
     },
     async handleView(row) {
       try {
-        const res = await getUsageRecordDetail(row.recordId)
+        const res = await getUsageRecordDetail(row.usageId)
         if (res.code === 200) {
           this.detailData = res.data
+          // 填充添加剂名称
+          if (this.detailData.additiveId) {
+            const additive = this.additiveList.find(a => a.additiveId === this.detailData.additiveId)
+            if (additive) {
+              this.detailData.additiveName = additive.additiveName
+            }
+          }
           this.detailVisible = true
         }
       } catch (error) {
         this.$message.error('加载详情失败')
-      }
-    },
-    handleAudit(row, status) {
-      this.auditForm = {
-        recordId: row.recordId,
-        auditStatus: status,
-        auditRemark: ''
-      }
-      this.auditVisible = true
-    },
-    async handleAuditSubmit() {
-      this.submitting = true
-      try {
-        const res = await auditUsageRecord(this.auditForm)
-        if (res.code === 200) {
-          this.$message.success('审核成功')
-          this.auditVisible = false
-          this.loadData()
-        }
-      } catch (error) {
-        this.$message.error('审核失败')
-      } finally {
-        this.submitting = false
       }
     },
     handleDelete(row) {
@@ -241,7 +289,7 @@ export default {
         type: 'warning'
       }).then(async () => {
         try {
-          const res = await deleteUsageRecord(row.recordId)
+          const res = await deleteUsageRecord(row.usageId)
           if (res.code === 200) {
             this.$message.success('删除成功')
             this.loadData()
