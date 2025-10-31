@@ -1,6 +1,7 @@
 package com.foodadditive.admin.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -46,6 +47,7 @@ public class UsageRecord implements Serializable {
      * 使用日期
      */
     @TableField("usage_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date usageDate;
 
     /**

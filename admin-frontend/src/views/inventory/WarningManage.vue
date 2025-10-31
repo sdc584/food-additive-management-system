@@ -35,6 +35,43 @@
         </el-table-column>
       </el-table>
     </el-card>
+
+    <!-- 处理预警对话框 -->
+    <el-dialog title="处理预警" :visible.sync="processDialogVisible" width="500px">
+      <el-form :model="processForm" :rules="processRules" ref="processForm" label-width="120px">
+        <el-form-item label="预警内容">
+          <div style="color: #606266;">{{ currentWarning.warningContent }}</div>
+        </el-form-item>
+        <el-form-item label="添加剂名称">
+          <div style="color: #606266;">{{ currentWarning.additiveName }}</div>
+        </el-form-item>
+        <el-form-item label="添加库存数量" prop="addQuantity">
+          <el-input-number
+            v-model="processForm.addQuantity"
+            :min="0"
+            :precision="2"
+            :step="1"
+            placeholder="请输入要添加的库存数量"
+            style="width: 100%;">
+          </el-input-number>
+          <div style="color: #909399; font-size: 12px; margin-top: 5px;">
+            输入0表示只标记为已处理，不增加库存；输入大于0的数量将增加该添加剂的库存
+          </div>
+        </el-form-item>
+        <el-form-item label="处理备注" prop="handleRemark">
+          <el-input
+            v-model="processForm.handleRemark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入处理备注（选填）">
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="processDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitProcess" :loading="submitting">确定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -46,7 +83,20 @@ export default {
   data() {
     return {
       loading: false,
-      tableData: []
+      submitting: false,
+      tableData: [],
+      processDialogVisible: false,
+      currentWarning: {},
+      processForm: {
+        addQuantity: null,
+        handleRemark: ''
+      },
+      processRules: {
+        addQuantity: [
+          { required: true, message: '请输入添加库存数量', trigger: 'blur' },
+          { type: 'number', min: 0, message: '数量不能小于0', trigger: 'blur' }
+        ]
+      }
     }
   },
   created() {
@@ -67,19 +117,42 @@ export default {
       }
     },
     handleProcess(row) {
-      this.$confirm('确定要标记为已处理吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
+      // 打开处理对话框
+      this.currentWarning = { ...row }
+      this.processForm = {
+        addQuantity: null,
+        handleRemark: ''
+      }
+      this.processDialogVisible = true
+
+      // 重置表单验证
+      this.$nextTick(() => {
+        if (this.$refs.processForm) {
+          this.$refs.processForm.clearValidate()
+        }
+      })
+    },
+    async submitProcess() {
+      // 验证表单
+      this.$refs.processForm.validate(async (valid) => {
+        if (!valid) {
+          return false
+        }
+
+        this.submitting = true
         try {
           const res = await updateWarning({
-            ...row,
+            warningId: this.currentWarning.warningId,
+            inventoryId: this.currentWarning.inventoryId,
+            addQuantity: this.processForm.addQuantity,
+            handleRemark: this.processForm.handleRemark,
             status: 'RESOLVED',
             handleTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
           })
+
           if (res.code === 200) {
-            this.$message.success('处理成功')
+            this.$message.success('处理成功，已增加库存数量')
+            this.processDialogVisible = false
             this.loadData()
           } else {
             this.$message.error(res.message || '处理失败')
@@ -87,23 +160,26 @@ export default {
         } catch (error) {
           console.error('处理失败:', error)
           this.$message.error('处理失败')
+        } finally {
+          this.submitting = false
         }
       })
     },
     handleCancel(row) {
-      this.$confirm('确定要取消处理吗？', '提示', {
+      this.$confirm('取消处理将减去之前添加的库存数量，确定要取消吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
         try {
           const res = await updateWarning({
-            ...row,
+            warningId: row.warningId,
+            inventoryId: row.inventoryId,
             status: 'PENDING',
             handleTime: null
           })
           if (res.code === 200) {
-            this.$message.success('取消成功')
+            this.$message.success('取消成功，已减去之前添加的库存数量')
             this.loadData()
           } else {
             this.$message.error(res.message || '取消失败')
@@ -112,6 +188,8 @@ export default {
           console.error('取消失败:', error)
           this.$message.error('取消失败')
         }
+      }).catch(() => {
+        // 用户点击了取消按钮，不做任何操作
       })
     }
   }

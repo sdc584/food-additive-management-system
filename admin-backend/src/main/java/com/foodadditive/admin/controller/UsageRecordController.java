@@ -96,8 +96,14 @@ public class UsageRecordController {
     @OperationLog(operation = "新增使用记录")
     @PostMapping
     public Result<Boolean> save(@RequestBody UsageRecord entity) {
-        boolean result = usageRecordService.save(entity);
-        return Result.success(result);
+        try {
+            System.out.println("接收到的使用记录数据: " + entity);
+            boolean result = usageRecordService.save(entity);
+            return Result.success(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("新增失败: " + e.getMessage());
+        }
     }
 
     /**

@@ -4,26 +4,10 @@
     <el-card class="search-card" shadow="never">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="操作人">
-          <el-input v-model="searchForm.operator" placeholder="请输入操作人" clearable></el-input>
+          <el-input v-model="searchForm.operator" placeholder="请输入操作人" clearable style="width: 150px;"></el-input>
         </el-form-item>
         <el-form-item label="操作类型">
-          <el-select v-model="searchForm.operationType" placeholder="请选择操作类型" clearable>
-            <el-option label="新增" value="INSERT"></el-option>
-            <el-option label="更新" value="UPDATE"></el-option>
-            <el-option label="删除" value="DELETE"></el-option>
-            <el-option label="查询" value="SELECT"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="模块名称">
-          <el-select v-model="searchForm.moduleName" placeholder="请选择模块" clearable>
-            <el-option label="添加剂管理" value="additive"></el-option>
-            <el-option label="库存管理" value="inventory"></el-option>
-            <el-option label="供应商管理" value="supplier"></el-option>
-            <el-option label="采购管理" value="purchase"></el-option>
-            <el-option label="使用记录" value="usage"></el-option>
-            <el-option label="检测报告" value="test"></el-option>
-            <el-option label="用户管理" value="user"></el-option>
-          </el-select>
+          <el-input v-model="searchForm.operationType" placeholder="请输入操作类型" clearable style="width: 150px;"></el-input>
         </el-form-item>
         <el-form-item label="操作时间">
           <el-date-picker
@@ -32,13 +16,13 @@
             range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
-            value-format="yyyy-MM-dd">
+            value-format="yyyy-MM-dd"
+            style="width: 300px;">
           </el-date-picker>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
           <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
-          <el-button type="success" icon="el-icon-download" @click="handleExport">导出</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -47,19 +31,18 @@
     <el-card class="table-card" shadow="never">
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column type="index" label="序号" width="60" align="center"></el-table-column>
-        <el-table-column prop="operationType" label="操作类型" width="100" align="center">
+        <el-table-column prop="operation" label="操作类型" width="150" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="method" label="请求方法" min-width="200" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="username" label="操作人" width="100"></el-table-column>
+        <el-table-column prop="operationTime" label="操作时间" width="180"></el-table-column>
+        <el-table-column prop="ip" label="IP地址" width="130"></el-table-column>
+        <el-table-column prop="status" label="状态" width="80" align="center">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.operationType === 'INSERT'" type="success" size="small">新增</el-tag>
-            <el-tag v-else-if="scope.row.operationType === 'UPDATE'" type="warning" size="small">更新</el-tag>
-            <el-tag v-else-if="scope.row.operationType === 'DELETE'" type="danger" size="small">删除</el-tag>
-            <el-tag v-else type="info" size="small">查询</el-tag>
+            <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'" size="small">
+              {{ scope.row.status === 1 ? '成功' : '失败' }}
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="moduleName" label="模块名称" width="120"></el-table-column>
-        <el-table-column prop="operationContent" label="操作内容" min-width="200" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="operator" label="操作人" width="100"></el-table-column>
-        <el-table-column prop="operationTime" label="操作时间" width="180"></el-table-column>
-        <el-table-column prop="ipAddress" label="IP地址" width="130"></el-table-column>
         <el-table-column label="操作" width="100" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="handleView(scope.row)">详情</el-button>
@@ -82,20 +65,22 @@
     <!-- 详情对话框 -->
     <el-dialog title="操作日志详情" :visible.sync="detailVisible" width="600px">
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="操作类型">
-          <el-tag v-if="detailData.operationType === 'INSERT'" type="success" size="small">新增</el-tag>
-          <el-tag v-else-if="detailData.operationType === 'UPDATE'" type="warning" size="small">更新</el-tag>
-          <el-tag v-else-if="detailData.operationType === 'DELETE'" type="danger" size="small">删除</el-tag>
-          <el-tag v-else type="info" size="small">查询</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="模块名称">{{ detailData.moduleName }}</el-descriptions-item>
-        <el-descriptions-item label="操作人">{{ detailData.operator }}</el-descriptions-item>
+        <el-descriptions-item label="操作类型">{{ detailData.operation }}</el-descriptions-item>
+        <el-descriptions-item label="请求方法">{{ detailData.method }}</el-descriptions-item>
+        <el-descriptions-item label="操作人">{{ detailData.username }}</el-descriptions-item>
         <el-descriptions-item label="操作时间">{{ detailData.operationTime }}</el-descriptions-item>
-        <el-descriptions-item label="IP地址">{{ detailData.ipAddress }}</el-descriptions-item>
-        <el-descriptions-item label="浏览器">{{ detailData.browser || '未知' }}</el-descriptions-item>
-        <el-descriptions-item label="操作内容" :span="2">{{ detailData.operationContent }}</el-descriptions-item>
+        <el-descriptions-item label="IP地址">{{ detailData.ip }}</el-descriptions-item>
+        <el-descriptions-item label="执行时长">{{ detailData.executionTime }}ms</el-descriptions-item>
+        <el-descriptions-item label="状态" :span="2">
+          <el-tag :type="detailData.status === 1 ? 'success' : 'danger'" size="small">
+            {{ detailData.status === 1 ? '成功' : '失败' }}
+          </el-tag>
+        </el-descriptions-item>
         <el-descriptions-item label="请求参数" :span="2">
-          <pre style="max-height: 200px; overflow-y: auto;">{{ detailData.requestParams || '无' }}</pre>
+          <pre style="max-height: 200px; overflow-y: auto;">{{ detailData.params || '无' }}</pre>
+        </el-descriptions-item>
+        <el-descriptions-item v-if="detailData.errorMsg" label="错误信息" :span="2">
+          <pre style="max-height: 200px; overflow-y: auto; color: red;">{{ detailData.errorMsg }}</pre>
         </el-descriptions-item>
       </el-descriptions>
       <div slot="footer" class="dialog-footer">
@@ -116,7 +101,6 @@ export default {
       searchForm: {
         operator: '',
         operationType: '',
-        moduleName: '',
         dateRange: null
       },
       tableData: [],
@@ -167,7 +151,6 @@ export default {
       this.searchForm = {
         operator: '',
         operationType: '',
-        moduleName: '',
         dateRange: null
       }
       this.pagination.currentPage = 1

@@ -1,6 +1,7 @@
 package com.foodadditive.admin.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
@@ -39,6 +40,7 @@ public class TestReport implements Serializable {
      * 检测日期
      */
     @TableField("test_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date testDate;
 
     /**
@@ -64,6 +66,12 @@ public class TestReport implements Serializable {
      */
     @TableField("report_file")
     private String reportFile;
+
+    /**
+     * 添加剂名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String additiveName;
 
     /**
      * 备注

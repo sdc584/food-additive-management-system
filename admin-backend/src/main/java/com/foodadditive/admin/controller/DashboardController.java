@@ -79,17 +79,13 @@ public class DashboardController {
         // 供应商数量
         long supplierCount = supplierService.count();
         stats.put("supplierCount", supplierCount);
-        
-        // 本月操作数量
-        YearMonth currentMonth = YearMonth.now();
-        LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
-        LocalDateTime endOfMonth = currentMonth.atEndOfMonth().atTime(23, 59, 59);
-        
-        QueryWrapper<com.foodadditive.admin.entity.OperationLog> queryWrapper = new QueryWrapper<>();
-        queryWrapper.between("operation_time", startOfMonth, endOfMonth);
-        long operationCount = operationLogService.count(queryWrapper);
-        stats.put("operationCount", operationCount);
-        
+
+        // 未处理预警数量
+        QueryWrapper<Warning> warningQueryWrapper = new QueryWrapper<>();
+        warningQueryWrapper.eq("status", "PENDING");
+        long pendingWarningCount = warningService.count(warningQueryWrapper);
+        stats.put("pendingWarningCount", pendingWarningCount);
+
         return Result.success(stats);
     }
 

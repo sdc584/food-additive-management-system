@@ -1,9 +1,13 @@
 package com.foodadditive.admin.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.foodadditive.admin.entity.OperationLog;
 import com.foodadditive.admin.service.OperationLogService;
 import com.foodadditive.admin.common.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,12 +26,54 @@ public class OperationLogController {
     private OperationLogService operationLogService;
 
     /**
-     * 查询操作日志列表
+     * 分页查询操作日志列表
      */
     @GetMapping
-    public Result<List<OperationLog>> list() {
-        List<OperationLog> list = operationLogService.list();
-        return Result.success(list);
+    public Result<IPage<OperationLog>> list(
+            @RequestParam(required = false) String operator,
+            @RequestParam(required = false) String operationType,
+            @RequestParam(required = false) String moduleName,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+
+        // 创建分页对象
+        Page<OperationLog> pageParam = new Page<>(page, size);
+
+        // 创建查询条件
+        QueryWrapper<OperationLog> queryWrapper = new QueryWrapper<>();
+
+        // 按操作人查询
+        if (StringUtils.hasText(operator)) {
+            queryWrapper.like("username", operator);
+        }
+
+        // 按操作类型查询（这里需要根据前端传的值映射到operation字段）
+        if (StringUtils.hasText(operationType)) {
+            queryWrapper.like("operation", operationType);
+        }
+
+        // 按模块名称查询
+        if (StringUtils.hasText(moduleName)) {
+            queryWrapper.like("method", moduleName);
+        }
+
+        // 按时间范围查询
+        if (StringUtils.hasText(startDate)) {
+            queryWrapper.ge("operation_time", startDate + " 00:00:00");
+        }
+        if (StringUtils.hasText(endDate)) {
+            queryWrapper.le("operation_time", endDate + " 23:59:59");
+        }
+
+        // 按操作时间倒序
+        queryWrapper.orderByDesc("operation_time");
+
+        // 分页查询
+        IPage<OperationLog> result = operationLogService.page(pageParam, queryWrapper);
+
+        return Result.success(result);
     }
 
     /**

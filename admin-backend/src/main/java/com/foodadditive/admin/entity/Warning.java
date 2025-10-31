@@ -90,6 +90,12 @@ public class Warning implements Serializable {
     private String handleRemark;
 
     /**
+     * 处理时添加的库存数量（非数据库字段，用于处理预警时传递参数）
+     */
+    @TableField(exist = false)
+    private java.math.BigDecimal addQuantity;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

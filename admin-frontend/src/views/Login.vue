@@ -120,7 +120,8 @@ export default {
               // 从后端响应中获取token和用户信息
               const { token, userId, username, realName, role } = res.data
               const userInfo = {
-                id: userId,
+                userId: userId,  // 使用userId字段保持一致
+                id: userId,      // 保留id字段以兼容其他代码
                 username: username,
                 realName: realName,
                 role: role

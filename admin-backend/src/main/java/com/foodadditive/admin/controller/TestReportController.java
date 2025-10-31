@@ -1,7 +1,11 @@
 package com.foodadditive.admin.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.foodadditive.admin.annotation.OperationLog;
+import com.foodadditive.admin.entity.FoodAdditive;
 import com.foodadditive.admin.entity.TestReport;
+import com.foodadditive.admin.service.FoodAdditiveService;
 import com.foodadditive.admin.service.TestReportService;
 import com.foodadditive.admin.common.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +26,34 @@ public class TestReportController {
     @Autowired
     private TestReportService testReportService;
 
+    @Autowired
+    private FoodAdditiveService foodAdditiveService;
+
     /**
-     * 查询检测报告列表
+     * 分页查询检测报告列表
      */
     @GetMapping
-    public Result<List<TestReport>> list() {
-        List<TestReport> list = testReportService.list();
-        return Result.success(list);
+    public Result<IPage<TestReport>> list(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+
+        // 创建分页对象
+        Page<TestReport> pageParam = new Page<>(page, size);
+
+        // 分页查询
+        IPage<TestReport> result = testReportService.page(pageParam);
+
+        // 填充添加剂名称
+        result.getRecords().forEach(report -> {
+            if (report.getAdditiveId() != null) {
+                FoodAdditive additive = foodAdditiveService.getById(report.getAdditiveId());
+                if (additive != null) {
+                    report.setAdditiveName(additive.getAdditiveName());
+                }
+            }
+        });
+
+        return Result.success(result);
     }
 
     /**

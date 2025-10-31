@@ -47,13 +47,13 @@
         </div>
       </el-col>
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-        <div class="card-panel card-panel-4">
+        <div class="card-panel card-panel-4" @click="handleQuickAction('warning')">
           <div class="card-panel-icon-wrapper">
-            <i class="el-icon-s-order card-panel-icon"></i>
+            <i class="el-icon-warning-outline card-panel-icon"></i>
           </div>
           <div class="card-panel-description">
-            <div class="card-panel-text">本月操作</div>
-            <count-to :start-val="0" :end-val="stats.operationCount" :duration="3600" class="card-panel-num" />
+            <div class="card-panel-text">未处理预警</div>
+            <count-to :start-val="0" :end-val="stats.pendingWarningCount" :duration="3600" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -152,7 +152,7 @@ export default {
         additiveCount: 0,
         inventoryTotal: 0,
         supplierCount: 0,
-        operationCount: 0
+        pendingWarningCount: 0
       },
       recentLogs: [],
       loading: false,
@@ -179,7 +179,7 @@ export default {
             additiveCount: res.data.additiveCount || 0,
             inventoryTotal: parseFloat(res.data.inventoryTotal) || 0,
             supplierCount: res.data.supplierCount || 0,
-            operationCount: res.data.operationCount || 0
+            pendingWarningCount: res.data.pendingWarningCount || 0
           }
         }
       } catch (error) {
@@ -308,8 +308,9 @@ export default {
       const routeMap = {
         'search': '/additive/list',
         'inventory': '/inventory/list',
-        'record': '/usage/list',
-        'report': '/test-report/list'
+        'record': '/usage',
+        'report': '/test-report',
+        'warning': '/inventory/warning'
       }
 
       if (routeMap[action]) {

@@ -247,9 +247,19 @@ export default {
         try {
           // 获取当前登录用户ID
           const userInfo = this.$store.state.userInfo
+          console.log('当前用户信息:', userInfo)
+          console.log('用户信息JSON:', JSON.stringify(userInfo))
+
           if (userInfo && userInfo.userId) {
             this.formData.userId = userInfo.userId
+          } else {
+            this.$message.error('无法获取当前用户信息，请重新登录')
+            this.submitting = false
+            return
           }
+
+          console.log('提交的数据:', this.formData)
+          console.log('提交数据JSON:', JSON.stringify(this.formData))
 
           let res
           if (this.dialogType === 'add') {
@@ -265,7 +275,19 @@ export default {
           }
         } catch (error) {
           console.error('提交失败:', error)
-          this.$message.error(this.dialogType === 'add' ? '新增失败' : '更新失败')
+          console.error('错误详情:', error.response)
+
+          // 显示详细错误信息
+          let errorMsg = this.dialogType === 'add' ? '新增失败' : '更新失败'
+          if (error.response && error.response.data) {
+            if (error.response.data.message) {
+              errorMsg += ': ' + error.response.data.message
+            } else if (error.response.data.error) {
+              errorMsg += ': ' + error.response.data.error
+            }
+          }
+
+          this.$message.error(errorMsg)
         } finally {
           this.submitting = false
         }
