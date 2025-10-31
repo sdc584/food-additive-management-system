@@ -245,6 +245,12 @@ export default {
 
         this.submitting = true
         try {
+          // 获取当前登录用户ID
+          const userInfo = this.$store.state.userInfo
+          if (userInfo && userInfo.userId) {
+            this.formData.userId = userInfo.userId
+          }
+
           let res
           if (this.dialogType === 'add') {
             res = await addUsageRecord(this.formData)
@@ -258,6 +264,7 @@ export default {
             this.loadData()
           }
         } catch (error) {
+          console.error('提交失败:', error)
           this.$message.error(this.dialogType === 'add' ? '新增失败' : '更新失败')
         } finally {
           this.submitting = false
