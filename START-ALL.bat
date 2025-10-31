@@ -27,6 +27,20 @@ cd ..
 
 echo.
 echo ========================================
+echo Closing processes on ports 8080-8083...
+echo ========================================
+echo.
+
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do taskkill /F /PID %%a 2>nul
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8081 ^| findstr LISTENING') do taskkill /F /PID %%a 2>nul
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8082 ^| findstr LISTENING') do taskkill /F /PID %%a 2>nul
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8083 ^| findstr LISTENING') do taskkill /F /PID %%a 2>nul
+
+echo Ports cleared.
+echo.
+
+echo.
+echo ========================================
 echo Starting all services...
 echo ========================================
 echo.
