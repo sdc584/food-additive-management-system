@@ -101,6 +101,7 @@
 
 <script>
 import CustomLogo from '@/components/Logo.vue'
+import { logout } from '@/api/auth'
 
 export default {
   name: 'Layout',
@@ -131,10 +132,19 @@ export default {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
-        }).then(() => {
-          this.$store.dispatch('logout')
-          this.$router.push('/login')
-          this.$message.success('退出成功')
+        }).then(async () => {
+          try {
+            // 调用后端logout API记录退出操作
+            await logout()
+          } catch (error) {
+            console.error('退出登录API调用失败:', error)
+            // 即使API调用失败，也继续执行前端退出逻辑
+          } finally {
+            // 清除本地token和用户信息
+            this.$store.dispatch('logout')
+            this.$router.push('/login')
+            this.$message.success('退出成功')
+          }
         })
       } else if (command === 'profile') {
         this.$message.info('个人中心功能开发中...')
