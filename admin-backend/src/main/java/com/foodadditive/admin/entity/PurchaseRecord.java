@@ -114,4 +114,16 @@ public class PurchaseRecord implements Serializable {
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
+    /**
+     * 添加剂名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String additiveName;
+
+    /**
+     * 供应商名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String supplierName;
+
 }

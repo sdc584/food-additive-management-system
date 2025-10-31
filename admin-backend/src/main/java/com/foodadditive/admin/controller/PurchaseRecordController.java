@@ -1,8 +1,12 @@
 package com.foodadditive.admin.controller;
 
 import com.foodadditive.admin.annotation.OperationLog;
+import com.foodadditive.admin.entity.FoodAdditive;
 import com.foodadditive.admin.entity.PurchaseRecord;
+import com.foodadditive.admin.entity.Supplier;
+import com.foodadditive.admin.service.FoodAdditiveService;
 import com.foodadditive.admin.service.PurchaseRecordService;
+import com.foodadditive.admin.service.SupplierService;
 import com.foodadditive.admin.common.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +15,7 @@ import java.util.List;
 
 /**
  * 采购记录Controller
- * 
+ *
  * @author 系统
  * @since 2025-01-01
  */
@@ -22,12 +26,35 @@ public class PurchaseRecordController {
     @Autowired
     private PurchaseRecordService purchaseRecordService;
 
+    @Autowired
+    private FoodAdditiveService foodAdditiveService;
+
+    @Autowired
+    private SupplierService supplierService;
+
     /**
      * 查询采购记录列表
      */
     @GetMapping
     public Result<List<PurchaseRecord>> list() {
         List<PurchaseRecord> list = purchaseRecordService.list();
+
+        // 填充添加剂名称和供应商名称
+        list.forEach(record -> {
+            if (record.getAdditiveId() != null) {
+                FoodAdditive additive = foodAdditiveService.getById(record.getAdditiveId());
+                if (additive != null) {
+                    record.setAdditiveName(additive.getAdditiveName());
+                }
+            }
+            if (record.getSupplierId() != null) {
+                Supplier supplier = supplierService.getById(record.getSupplierId());
+                if (supplier != null) {
+                    record.setSupplierName(supplier.getSupplierName());
+                }
+            }
+        });
+
         return Result.success(list);
     }
 

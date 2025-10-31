@@ -15,9 +15,10 @@
         <el-table-column prop="purchaseDate" label="采购日期" width="120"></el-table-column>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.status === 0" type="warning" size="small">待审核</el-tag>
-            <el-tag v-else-if="scope.row.status === 1" type="success" size="small">已审核</el-tag>
-            <el-tag v-else type="info" size="small">已入库</el-tag>
+            <el-tag v-if="scope.row.status === 'PENDING'" type="warning" size="small">待审核</el-tag>
+            <el-tag v-else-if="scope.row.status === 'APPROVED'" type="success" size="small">已审核</el-tag>
+            <el-tag v-else-if="scope.row.status === 'COMPLETED'" type="info" size="small">已完成</el-tag>
+            <el-tag v-else type="danger" size="small">已取消</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150" align="center">
@@ -136,20 +137,11 @@ export default {
         const res = await getPurchaseRecordList()
         if (res.code === 200) {
           this.tableData = res.data || []
-          // 添加关联名称
-          this.tableData.forEach(item => {
-            const additive = this.additiveList.find(a => a.additiveId === item.additiveId)
-            const supplier = this.supplierList.find(s => s.supplierId === item.supplierId)
-            if (additive) item.additiveName = additive.additiveName
-            if (supplier) item.supplierName = supplier.supplierName
-            // 计算总价
-            if (item.quantity && item.unitPrice) {
-              item.totalPrice = (item.quantity * item.unitPrice).toFixed(2)
-            }
-          })
+          // 后端已经填充了additiveName和supplierName，无需前端处理
         }
       } catch (error) {
         console.error('加载数据失败:', error)
+        this.$message.error('加载数据失败')
       } finally {
         this.loading = false
       }
@@ -177,7 +169,7 @@ export default {
     handleAdd() {
       this.dialogType = 'add'
       this.dialogTitle = '新增采购记录'
-      this.formData = { status: 0, quantity: 0, unitPrice: 0 }
+      this.formData = { status: 'PENDING', quantity: 0, unitPrice: 0 }
       this.dialogVisible = true
     },
     handleEdit(row) {

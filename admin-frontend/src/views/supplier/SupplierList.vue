@@ -31,6 +31,7 @@
             <el-tag v-if="scope.row.creditLevel === 'A'" type="success" size="small">优秀</el-tag>
             <el-tag v-else-if="scope.row.creditLevel === 'B'" type="warning" size="small">良好</el-tag>
             <el-tag v-else-if="scope.row.creditLevel === 'C'" type="info" size="small">一般</el-tag>
+            <el-tag v-else type="info" size="small">未设置</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="80" align="center">
