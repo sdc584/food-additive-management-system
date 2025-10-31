@@ -65,9 +65,6 @@
         <el-form-item label="检测机构" prop="testOrganization">
           <el-input v-model="formData.testOrganization" placeholder="请输入检测机构"></el-input>
         </el-form-item>
-        <el-form-item label="检测人员" prop="testPerson">
-          <el-input v-model="formData.testPerson" placeholder="请输入检测人员"></el-input>
-        </el-form-item>
         <el-form-item label="检测结果" prop="testResult">
           <el-radio-group v-model="formData.testResult">
             <el-radio label="合格">合格</el-radio>
@@ -148,7 +145,6 @@ export default {
         reportNo: '',
         testDate: '',
         testOrganization: '',
-        testPerson: '',
         testResult: '合格',
         testItems: '',
         remark: ''
@@ -166,9 +162,6 @@ export default {
         ],
         testOrganization: [
           { required: true, message: '请输入检测机构', trigger: 'blur' }
-        ],
-        testPerson: [
-          { required: true, message: '请输入检测人员', trigger: 'blur' }
         ],
         testResult: [
           { required: true, message: '请选择检测结果', trigger: 'change' }
@@ -216,7 +209,6 @@ export default {
         reportNo: '',
         testDate: '',
         testOrganization: '',
-        testPerson: '',
         testResult: '合格',
         testItems: '',
         remark: ''

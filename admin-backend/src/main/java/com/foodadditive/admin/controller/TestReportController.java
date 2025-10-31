@@ -1,5 +1,6 @@
 package com.foodadditive.admin.controller;
 
+import com.foodadditive.admin.annotation.OperationLog;
 import com.foodadditive.admin.entity.TestReport;
 import com.foodadditive.admin.service.TestReportService;
 import com.foodadditive.admin.common.Result;
@@ -10,7 +11,7 @@ import java.util.List;
 
 /**
  * 检测报告Controller
- * 
+ *
  * @author 系统
  * @since 2025-01-01
  */
@@ -42,6 +43,7 @@ public class TestReportController {
     /**
      * 新增检测报告
      */
+    @OperationLog(operation = "新增检测报告")
     @PostMapping
     public Result<Boolean> save(@RequestBody TestReport entity) {
         boolean result = testReportService.save(entity);
@@ -51,6 +53,7 @@ public class TestReportController {
     /**
      * 更新检测报告
      */
+    @OperationLog(operation = "更新检测报告")
     @PutMapping
     public Result<Boolean> update(@RequestBody TestReport entity) {
         boolean result = testReportService.updateById(entity);
@@ -60,6 +63,7 @@ public class TestReportController {
     /**
      * 删除检测报告
      */
+    @OperationLog(operation = "删除检测报告")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean result = testReportService.removeById(id);
