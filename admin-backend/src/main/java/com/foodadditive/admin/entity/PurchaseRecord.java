@@ -19,10 +19,10 @@ public class PurchaseRecord implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 记录ID
+     * 采购ID
      */
-    @TableId(value = "record_id", type = IdType.AUTO)
-    private Long recordId;
+    @TableId(value = "purchase_id", type = IdType.AUTO)
+    private Long purchaseId;
 
     /**
      * 采购单号
@@ -81,20 +81,20 @@ public class PurchaseRecord implements Serializable {
     /**
      * 批次号
      */
-    @TableField("batch_no")
-    private String batchNo;
+    @TableField("batch_number")
+    private String batchNumber;
 
     /**
      * 采购员ID
      */
-    @TableField("purchaser")
-    private Long purchaser;
+    @TableField("purchaser_id")
+    private Long purchaserId;
 
     /**
-     * 状态：0-待审核，1-已审核，2-已入库
+     * 状态：PENDING-待审核，APPROVED-已审核，COMPLETED-已完成，CANCELLED-已取消
      */
     @TableField("status")
-    private Integer status;
+    private String status;
 
     /**
      * 备注

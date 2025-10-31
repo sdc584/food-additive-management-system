@@ -77,10 +77,10 @@ public class PurchaseRecordController {
         if (record == null) {
             return Result.error("采购记录不存在");
         }
-        if (record.getStatus() != 0) {
+        if (!"PENDING".equals(record.getStatus())) {
             return Result.error("该采购记录已审核");
         }
-        record.setStatus(1); // 已审核
+        record.setStatus("APPROVED"); // 已审核
         boolean result = purchaseRecordService.updateById(record);
         return Result.success(result);
     }
@@ -95,15 +95,14 @@ public class PurchaseRecordController {
         if (record == null) {
             return Result.error("采购记录不存在");
         }
-        if (record.getStatus() != 0) {
+        if (!"PENDING".equals(record.getStatus())) {
             return Result.error("该采购记录已审核");
         }
         // 可以在remark中记录拒绝原因
         if (reason != null && !reason.isEmpty()) {
             record.setRemark((record.getRemark() != null ? record.getRemark() + "; " : "") + "拒绝原因: " + reason);
         }
-        // 这里可以设置为特殊状态，或者直接删除，根据业务需求
-        // 暂时保持状态为0，但在remark中标记
+        record.setStatus("CANCELLED"); // 已取消
         boolean result = purchaseRecordService.updateById(record);
         return Result.success(result);
     }
