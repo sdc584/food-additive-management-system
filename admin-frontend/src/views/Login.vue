@@ -63,6 +63,7 @@
 </template>
 <script>
 import CustomLogo from '@/components/Logo.vue'
+import { login } from '@/api/auth'
 
 export default {
   name: 'Login',
@@ -104,28 +105,41 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
+    async handleLogin() {
+      this.$refs.loginForm.validate(async valid => {
         if (valid) {
           this.loading = true
-          setTimeout(() => {
-            this.loading = false
-
-            // 模拟登录成功后的数据
-            const token = 'mock-token-' + Date.now()
-            const userInfo = {
-              id: 1,
+          try {
+            // 调用真实的登录API
+            const res = await login({
               username: this.loginForm.username,
-              realName: '管理员',
-              role: 'admin'
+              password: this.loginForm.password
+            })
+
+            if (res.code === 200 && res.data) {
+              // 从后端响应中获取token和用户信息
+              const { token, userId, username, realName, role } = res.data
+              const userInfo = {
+                id: userId,
+                username: username,
+                realName: realName,
+                role: role
+              }
+
+              // 保存到Vuex store
+              this.$store.dispatch('login', { token, userInfo })
+
+              this.$message.success('登录成功')
+              this.$router.push('/dashboard')
+            } else {
+              this.$message.error(res.message || '登录失败')
             }
-
-            // 保存到Vuex store
-            this.$store.dispatch('login', { token, userInfo })
-
-            this.$message.success('登录成功')
-            this.$router.push('/dashboard')
-          }, 1000)
+          } catch (error) {
+            console.error('登录失败:', error)
+            this.$message.error(error.message || '登录失败，请检查用户名和密码')
+          } finally {
+            this.loading = false
+          }
         } else {
           return false
         }

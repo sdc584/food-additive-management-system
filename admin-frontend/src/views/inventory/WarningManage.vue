@@ -21,15 +21,16 @@
         <el-table-column prop="warningDate" label="预警日期" width="120"></el-table-column>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template slot-scope="scope">
-            <el-tag :type="scope.row.status === 1 ? 'success' : 'warning'" size="small">
-              {{ scope.row.status === 1 ? '已处理' : '未处理' }}
-            </el-tag>
+            <el-tag v-if="scope.row.status === 'PENDING'" type="warning" size="small">未处理</el-tag>
+            <el-tag v-else-if="scope.row.status === 'PROCESSING'" type="primary" size="small">处理中</el-tag>
+            <el-tag v-else-if="scope.row.status === 'RESOLVED'" type="success" size="small">已解决</el-tag>
+            <el-tag v-else type="info" size="small">已关闭</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="120" align="center">
           <template slot-scope="scope">
-            <el-button v-if="scope.row.status === 0" type="text" size="small" @click="handleProcess(scope.row)">处理</el-button>
-            <span v-else style="color: #909399;">已处理</span>
+            <el-button v-if="scope.row.status === 'PENDING'" type="text" size="small" @click="handleProcess(scope.row)">处理</el-button>
+            <el-button v-else type="text" size="small" @click="handleCancel(scope.row)" style="color: #909399;">取消处理</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,13 +73,44 @@ export default {
         type: 'warning'
       }).then(async () => {
         try {
-          const res = await updateWarning({ ...row, status: 1 })
+          const res = await updateWarning({
+            ...row,
+            status: 'RESOLVED',
+            handleTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
+          })
           if (res.code === 200) {
             this.$message.success('处理成功')
             this.loadData()
+          } else {
+            this.$message.error(res.message || '处理失败')
           }
         } catch (error) {
           console.error('处理失败:', error)
+          this.$message.error('处理失败')
+        }
+      })
+    },
+    handleCancel(row) {
+      this.$confirm('确定要取消处理吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        try {
+          const res = await updateWarning({
+            ...row,
+            status: 'PENDING',
+            handleTime: null
+          })
+          if (res.code === 200) {
+            this.$message.success('取消成功')
+            this.loadData()
+          } else {
+            this.$message.error(res.message || '取消失败')
+          }
+        } catch (error) {
+          console.error('取消失败:', error)
+          this.$message.error('取消失败')
         }
       })
     }

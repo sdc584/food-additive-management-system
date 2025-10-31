@@ -1,5 +1,6 @@
 package com.foodadditive.admin.controller;
 
+import com.foodadditive.admin.annotation.OperationLog;
 import com.foodadditive.admin.entity.AdditiveCategory;
 import com.foodadditive.admin.service.AdditiveCategoryService;
 import com.foodadditive.admin.common.Result;
@@ -42,6 +43,7 @@ public class AdditiveCategoryController {
     /**
      * 新增添加剂分类
      */
+    @OperationLog(operation = "新增添加剂分类")
     @PostMapping
     public Result<Boolean> save(@RequestBody AdditiveCategory entity) {
         boolean result = additiveCategoryService.save(entity);
@@ -51,6 +53,7 @@ public class AdditiveCategoryController {
     /**
      * 更新添加剂分类
      */
+    @OperationLog(operation = "更新添加剂分类")
     @PutMapping
     public Result<Boolean> update(@RequestBody AdditiveCategory entity) {
         boolean result = additiveCategoryService.updateById(entity);
@@ -60,6 +63,7 @@ public class AdditiveCategoryController {
     /**
      * 删除添加剂分类
      */
+    @OperationLog(operation = "删除添加剂分类")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean result = additiveCategoryService.removeById(id);

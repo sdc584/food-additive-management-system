@@ -1,5 +1,6 @@
 package com.foodadditive.admin.controller;
 
+import com.foodadditive.admin.annotation.OperationLog;
 import com.foodadditive.admin.entity.PurchaseRecord;
 import com.foodadditive.admin.service.PurchaseRecordService;
 import com.foodadditive.admin.common.Result;
@@ -15,7 +16,7 @@ import java.util.List;
  * @since 2025-01-01
  */
 @RestController
-@RequestMapping("/api/admin/purchaseRecords")
+@RequestMapping("/purchaseRecords")
 public class PurchaseRecordController {
 
     @Autowired
@@ -63,6 +64,47 @@ public class PurchaseRecordController {
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean result = purchaseRecordService.removeById(id);
+        return Result.success(result);
+    }
+
+    /**
+     * 审核采购记录（通过）
+     */
+    @OperationLog(operation = "审核采购记录-通过")
+    @PutMapping("/{id}/approve")
+    public Result<Boolean> approve(@PathVariable Long id) {
+        PurchaseRecord record = purchaseRecordService.getById(id);
+        if (record == null) {
+            return Result.error("采购记录不存在");
+        }
+        if (record.getStatus() != 0) {
+            return Result.error("该采购记录已审核");
+        }
+        record.setStatus(1); // 已审核
+        boolean result = purchaseRecordService.updateById(record);
+        return Result.success(result);
+    }
+
+    /**
+     * 审核采购记录（拒绝）
+     */
+    @OperationLog(operation = "审核采购记录-拒绝")
+    @PutMapping("/{id}/reject")
+    public Result<Boolean> reject(@PathVariable Long id, @RequestParam(required = false) String reason) {
+        PurchaseRecord record = purchaseRecordService.getById(id);
+        if (record == null) {
+            return Result.error("采购记录不存在");
+        }
+        if (record.getStatus() != 0) {
+            return Result.error("该采购记录已审核");
+        }
+        // 可以在remark中记录拒绝原因
+        if (reason != null && !reason.isEmpty()) {
+            record.setRemark((record.getRemark() != null ? record.getRemark() + "; " : "") + "拒绝原因: " + reason);
+        }
+        // 这里可以设置为特殊状态，或者直接删除，根据业务需求
+        // 暂时保持状态为0，但在remark中标记
+        boolean result = purchaseRecordService.updateById(record);
         return Result.success(result);
     }
 

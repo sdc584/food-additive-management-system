@@ -27,3 +27,12 @@ export function exportOperationLog(params) {
   })
 }
 
+// 获取最近的操作日志（用于首页展示）
+export function getRecentLogs(limit = 5) {
+  return request({
+    url: '/api/admin/operationLogs/recent',
+    method: 'get',
+    params: { limit }
+  })
+}
+

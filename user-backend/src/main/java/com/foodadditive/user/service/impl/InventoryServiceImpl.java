@@ -21,7 +21,7 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
     public Double getTotalQuantity() {
         List<Inventory> list = this.list();
         return list.stream()
-                .mapToDouble(inventory -> inventory.getQuantity() != null ? inventory.getQuantity() : 0.0)
+                .mapToDouble(inventory -> inventory.getCurrentStock() != null ? inventory.getCurrentStock().doubleValue() : 0.0)
                 .sum();
     }
 }

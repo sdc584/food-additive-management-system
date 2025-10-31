@@ -36,6 +36,18 @@ public class Warning implements Serializable {
     private Long additiveId;
 
     /**
+     * 添加剂名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String additiveName;
+
+    /**
+     * 库存ID
+     */
+    @TableField("inventory_id")
+    private Long inventoryId;
+
+    /**
      * 预警级别：HIGH-高，MEDIUM-中，LOW-低
      */
     @TableField("warning_level")
@@ -54,16 +66,16 @@ public class Warning implements Serializable {
     private Date warningDate;
 
     /**
-     * 状态：0-未处理，1-已处理
+     * 状态：PENDING-待处理，PROCESSING-处理中，RESOLVED-已解决，CLOSED-已关闭
      */
     @TableField("status")
-    private Integer status;
+    private String status;
 
     /**
      * 处理人ID
      */
-    @TableField("handler")
-    private Long handler;
+    @TableField("handler_id")
+    private Long handlerId;
 
     /**
      * 处理时间

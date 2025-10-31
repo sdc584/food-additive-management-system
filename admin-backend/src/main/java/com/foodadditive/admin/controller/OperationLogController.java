@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2025-01-01
  */
 @RestController
-@RequestMapping("/api/admin/operationLogs")
+@RequestMapping("/operationLogs")
 public class OperationLogController {
 
     @Autowired
@@ -27,6 +27,15 @@ public class OperationLogController {
     @GetMapping
     public Result<List<OperationLog>> list() {
         List<OperationLog> list = operationLogService.list();
+        return Result.success(list);
+    }
+
+    /**
+     * 获取最近的操作日志（用于首页展示）
+     */
+    @GetMapping("/recent")
+    public Result<List<OperationLog>> getRecentLogs(@RequestParam(defaultValue = "5") Integer limit) {
+        List<OperationLog> list = operationLogService.getRecentLogs(limit);
         return Result.success(list);
     }
 

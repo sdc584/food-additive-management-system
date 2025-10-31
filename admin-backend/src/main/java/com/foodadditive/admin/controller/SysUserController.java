@@ -1,8 +1,10 @@
 package com.foodadditive.admin.controller;
 
+import com.foodadditive.admin.annotation.OperationLog;
 import com.foodadditive.admin.entity.SysUser;
 import com.foodadditive.admin.service.SysUserService;
 import com.foodadditive.admin.common.Result;
+import com.foodadditive.admin.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +44,7 @@ public class SysUserController {
     /**
      * 新增用户
      */
+    @OperationLog(operation = "新增用户")
     @PostMapping
     public Result<Boolean> save(@RequestBody SysUser entity) {
         boolean result = sysUserService.save(entity);
@@ -51,6 +54,7 @@ public class SysUserController {
     /**
      * 更新用户
      */
+    @OperationLog(operation = "更新用户")
     @PutMapping
     public Result<Boolean> update(@RequestBody SysUser entity) {
         boolean result = sysUserService.updateById(entity);
@@ -60,9 +64,27 @@ public class SysUserController {
     /**
      * 删除用户
      */
+    @OperationLog(operation = "删除用户")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean result = sysUserService.removeById(id);
+        return Result.success(result);
+    }
+
+    /**
+     * 重置用户密码
+     */
+    @OperationLog(operation = "重置用户密码")
+    @PutMapping("/{id}/reset-password")
+    public Result<Boolean> resetPassword(@PathVariable Long id, @RequestParam(required = false) String newPassword) {
+        SysUser user = sysUserService.getById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        // 如果没有提供新密码，使用默认密码
+        String password = (newPassword != null && !newPassword.isEmpty()) ? newPassword : "123456";
+        user.setPassword(PasswordUtil.encode(password));
+        boolean result = sysUserService.updateById(user);
         return Result.success(result);
     }
 

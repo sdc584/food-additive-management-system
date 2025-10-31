@@ -68,13 +68,19 @@ public class OperationLog implements Serializable {
     /**
      * 执行时长(ms)
      */
-    @TableField("duration")
-    private Long duration;
+    @TableField("execution_time")
+    private Long executionTime;
 
     /**
-     * 创建时间
+     * 状态: 1-成功, 0-失败
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private Date createTime;
+    @TableField("status")
+    private Integer status;
+
+    /**
+     * 错误信息
+     */
+    @TableField("error_msg")
+    private String errorMsg;
 
 }

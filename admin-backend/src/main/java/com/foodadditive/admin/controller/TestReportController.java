@@ -15,7 +15,7 @@ import java.util.List;
  * @since 2025-01-01
  */
 @RestController
-@RequestMapping("/api/admin/testReports")
+@RequestMapping("/testReports")
 public class TestReportController {
 
     @Autowired

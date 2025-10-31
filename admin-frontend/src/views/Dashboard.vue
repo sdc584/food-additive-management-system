@@ -20,7 +20,7 @@
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">添加剂种类</div>
-            <count-to :start-val="0" :end-val="156" :duration="2600" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="stats.additiveCount" :duration="2600" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -31,7 +31,7 @@
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">库存总量(kg)</div>
-            <count-to :start-val="0" :end-val="2345" :duration="3000" class="card-panel-num" />
+            <count-to :start-val="0" :end-val="stats.inventoryTotal" :duration="3000" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -41,8 +41,8 @@
             <i class="el-icon-warning card-panel-icon"></i>
           </div>
           <div class="card-panel-description">
-            <div class="card-panel-text">预警信息</div>
-            <count-to :start-val="0" :end-val="8" :duration="3200" class="card-panel-num" />
+            <div class="card-panel-text">供应商数量</div>
+            <count-to :start-val="0" :end-val="stats.supplierCount" :duration="3200" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -52,8 +52,8 @@
             <i class="el-icon-s-order card-panel-icon"></i>
           </div>
           <div class="card-panel-description">
-            <div class="card-panel-text">本月使用</div>
-            <count-to :start-val="0" :end-val="432" :duration="3600" class="card-panel-num" />
+            <div class="card-panel-text">本月操作</div>
+            <count-to :start-val="0" :end-val="stats.operationCount" :duration="3600" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -143,23 +143,86 @@
 </template>
 
 <script>
+import { getDashboardStats, getRecentLogs } from '@/api/dashboard'
+
 export default {
   name: 'Dashboard',
   data() {
     return {
-      recentLogs: [
-        { time: '2025-10-31 10:30:25', user: '管理员', action: '添加食品添加剂', status: '成功' },
-        { time: '2025-10-31 10:15:12', user: '张三', action: '更新库存信息', status: '成功' },
-        { time: '2025-10-31 09:45:33', user: '李四', action: '生成检测报告', status: '成功' },
-        { time: '2025-10-31 09:20:18', user: '王五', action: '删除过期记录', status: '成功' },
-        { time: '2025-10-31 08:55:42', user: '赵六', action: '导出数据', status: '失败' }
-      ]
+      stats: {
+        additiveCount: 0,
+        inventoryTotal: 0,
+        supplierCount: 0,
+        operationCount: 0
+      },
+      recentLogs: [],
+      loading: false
     }
   },
   mounted() {
+    this.loadStats()
+    this.loadRecentLogs()
     this.initCharts()
   },
   methods: {
+    // 加载统计数据
+    async loadStats() {
+      try {
+        const res = await getDashboardStats()
+        if (res.code === 200) {
+          this.stats = {
+            additiveCount: res.data.additiveCount || 0,
+            inventoryTotal: parseFloat(res.data.inventoryTotal) || 0,
+            supplierCount: res.data.supplierCount || 0,
+            operationCount: res.data.operationCount || 0
+          }
+        }
+      } catch (error) {
+        console.error('加载统计数据失败', error)
+        this.$message.error('加载统计数据失败')
+      }
+    },
+    // 加载最近的操作日志
+    async loadRecentLogs() {
+      try {
+        this.loading = true
+        const res = await getRecentLogs(5)
+        if (res.code === 200 && res.data && res.data.length > 0) {
+          // 转换数据格式以适配页面显示
+          this.recentLogs = res.data.map(log => ({
+            time: this.formatDateTime(log.operationTime),
+            user: log.username || '系统',
+            action: log.operation || log.method,
+            status: log.status === 1 ? '成功' : '失败'
+          }))
+        } else {
+          // 如果没有数据，显示提示
+          this.recentLogs = [
+            { time: '暂无数据', user: '-', action: '暂无操作记录', status: '-' }
+          ]
+        }
+      } catch (error) {
+        console.error('加载操作日志失败', error)
+        // 如果加载失败，使用默认数据
+        this.recentLogs = [
+          { time: '暂无数据', user: '-', action: '暂无操作记录', status: '-' }
+        ]
+      } finally {
+        this.loading = false
+      }
+    },
+    // 格式化日期时间
+    formatDateTime(dateTime) {
+      if (!dateTime) return '-'
+      const date = new Date(dateTime)
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    },
     initCharts() {
       // 这里可以初始化图表，暂时留空
       console.log('图表初始化')
@@ -180,19 +243,29 @@ export default {
           displayValue: this.startVal
         }
       },
+      watch: {
+        endVal(newVal, oldVal) {
+          if (newVal !== oldVal) {
+            this.animateValue(oldVal, newVal)
+          }
+        }
+      },
       mounted() {
-        this.animateValue()
+        if (this.endVal > 0) {
+          this.animateValue(this.startVal, this.endVal)
+        }
       },
       methods: {
-        animateValue() {
-          const range = this.endVal - this.startVal
+        animateValue(start, end) {
+          this.displayValue = start
+          const range = end - start
           const increment = range / (this.duration / 16)
           const step = () => {
             this.displayValue += increment
-            if (this.displayValue < this.endVal) {
+            if ((increment > 0 && this.displayValue < end) || (increment < 0 && this.displayValue > end)) {
               requestAnimationFrame(step)
             } else {
-              this.displayValue = this.endVal
+              this.displayValue = end
             }
           }
           requestAnimationFrame(step)

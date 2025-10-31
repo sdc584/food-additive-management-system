@@ -1,15 +1,22 @@
 package com.foodadditive.admin.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.foodadditive.admin.annotation.OperationLog;
 import com.foodadditive.admin.common.Result;
 import com.foodadditive.admin.dto.LoginRequest;
 import com.foodadditive.admin.dto.LoginResponse;
 import com.foodadditive.admin.entity.SysUser;
+import com.foodadditive.admin.service.OperationLogService;
 import com.foodadditive.admin.service.SysUserService;
 import com.foodadditive.admin.util.JwtUtil;
 import com.foodadditive.admin.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * 认证控制器
@@ -25,9 +32,12 @@ public class AuthController {
     @Autowired
     private SysUserService sysUserService;
 
+    @Autowired
+    private OperationLogService operationLogService;
+
     /**
      * 用户登录
-     * 
+     *
      * @param request 登录请求
      * @return 登录结果
      */
@@ -64,6 +74,23 @@ public class AuthController {
         // 生成JWT令牌
         String token = JwtUtil.generateToken(user.getUserId(), user.getUsername(), user.getRole());
 
+        // 记录登录日志
+        try {
+            com.foodadditive.admin.entity.OperationLog log = new com.foodadditive.admin.entity.OperationLog();
+            log.setUserId(user.getUserId());
+            log.setUsername(user.getUsername());
+            log.setOperation("用户登录");
+            log.setMethod("POST /auth/login");
+            log.setParams("{\"username\":\"" + request.getUsername() + "\"}");
+            log.setIp(getIpAddress());
+            log.setOperationTime(new Date());
+            log.setStatus(1);
+            operationLogService.save(log);
+        } catch (Exception e) {
+            // 记录日志失败不影响登录
+            e.printStackTrace();
+        }
+
         // 构造响应
         LoginResponse response = new LoginResponse(
                 token,
@@ -74,6 +101,31 @@ public class AuthController {
         );
 
         return Result.success("登录成功", response);
+    }
+
+    /**
+     * 获取客户端IP地址
+     */
+    private String getIpAddress() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return "unknown";
+        }
+        HttpServletRequest request = attributes.getRequest();
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WX-Forwarded-For");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0];
+        }
+        return ip;
     }
 
     /**
@@ -114,9 +166,10 @@ public class AuthController {
 
     /**
      * 用户登出
-     * 
+     *
      * @return 登出结果
      */
+    @OperationLog(operation = "用户登出")
     @PostMapping("/logout")
     public Result<Void> logout() {
         // 前端清除token即可

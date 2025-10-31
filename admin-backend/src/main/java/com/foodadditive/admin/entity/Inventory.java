@@ -31,6 +31,12 @@ public class Inventory implements Serializable {
     private Long additiveId;
 
     /**
+     * 添加剂名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String additiveName;
+
+    /**
      * 当前库存
      */
     @TableField("current_stock")

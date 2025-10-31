@@ -3,6 +3,9 @@
 -- 包含表结构创建和初始数据导入
 -- 所有表都有外键关联，无孤表
 -- ============================================
+-- 注意：此脚本会删除并重新创建数据库，请谨慎使用！
+-- 使用方法：mysql -u root -p --default-character-set=utf8mb4 < complete-schema.sql
+-- ============================================
 
 -- 删除并重新创建数据库
 DROP DATABASE IF EXISTS food_additive_system;
@@ -273,10 +276,10 @@ INSERT INTO food_additive (additive_name, additive_code, category_id, cas_number
 ('卵磷脂', 'FA007', 6, '8002-43-5', 'C42H80NO8P', '60%', 'kg', 10.0, 'A', '乳化剂，营养强化剂', '巧克力、烘焙食品', 1);
 
 -- 4. 插入供应商
-INSERT INTO supplier (supplier_name, supplier_code, contact_person, contact_phone, contact_email, address, credit_level, business_license, status) VALUES
-('上海添加剂公司', 'SUP001', '王经理', '021-12345678', 'wang@sh-additive.com', '上海市浦东新区', 'AAA', '91310000MA1FL5E73X', 1),
-('北京食品原料', 'SUP002', '李经理', '010-87654321', 'li@bj-food.com', '北京市朝阳区', 'AA', '91110000MA1FL5E74Y', 1),
-('广州化工贸易', 'SUP003', '张经理', '020-98765432', 'zhang@gz-chem.com', '广州市天河区', 'AAA', '91440000MA1FL5E75Z', 1);
+INSERT INTO supplier (supplier_name, supplier_code, contact_person, contact_phone, contact_email, address, credit_level, business_license, status, remark) VALUES
+('上海添加剂供应有限公司', 'SUP001', '张经理', '021-12345678', 'zhang@supplier1.com', '上海市浦东新区张江高科技园区', 'AAA', '91310000MA1K12345A', 1, '主要供应食品级柠檬酸、山梨酸钾等'),
+('维他命供应商(北京)有限公司', 'SUP002', '李经理', '010-87654321', 'li@supplier2.com', '北京市朝阳区CBD中心', 'AA', '91110000MA1K67890B', 1, '专业维生素类添加剂供应商'),
+('粤港食品添加剂贸易公司', 'SUP003', '黄经理', '020-98765432', 'huang@supplier3.com', '广州市天河区珠江新城', 'AAA', '91440000MA1K11111C', 1, '华南地区最大的食品添加剂供应商');
 
 -- 5. 插入采购记录
 INSERT INTO purchase_record (purchase_no, additive_id, supplier_id, quantity, unit_price, total_price, purchase_date, production_date, expiry_date, batch_number, purchaser_id, status) VALUES
@@ -288,7 +291,7 @@ INSERT INTO purchase_record (purchase_no, additive_id, supplier_id, quantity, un
 
 -- 6. 插入库存记录
 INSERT INTO inventory (additive_id, current_stock, min_stock, max_stock, warehouse_location, last_purchase_date, last_usage_date, status) VALUES
-(1, 80.00, 20.00, 200.00, 'A区-01货架', '2024-01-15', '2024-03-10', 1),
+(1, 81.00, 20.00, 200.00, 'A区-01货架', '2024-01-15', '2024-03-10', 1),
 (2, 45.00, 15.00, 150.00, 'A区-02货架', '2024-01-20', '2024-03-12', 1),
 (3, 28.00, 10.00, 100.00, 'B区-01货架', '2024-02-10', '2024-03-15', 1),
 (4, 18.00, 5.00, 50.00, 'B区-02货架', '2024-02-15', '2024-03-18', 1),

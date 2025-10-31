@@ -1,6 +1,6 @@
 package com.foodadditive.user.controller;
 
-import com.foodadditive.common.Result;
+import com.foodadditive.user.common.Result;
 import com.foodadditive.user.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

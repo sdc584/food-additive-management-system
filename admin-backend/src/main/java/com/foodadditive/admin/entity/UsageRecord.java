@@ -19,10 +19,10 @@ public class UsageRecord implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 记录ID
+     * 使用记录ID
      */
-    @TableId(value = "record_id", type = IdType.AUTO)
-    private Long recordId;
+    @TableId(value = "usage_id", type = IdType.AUTO)
+    private Long usageId;
 
     /**
      * 使用单号
@@ -39,8 +39,8 @@ public class UsageRecord implements Serializable {
     /**
      * 使用数量
      */
-    @TableField("usage_quantity")
-    private BigDecimal usageQuantity;
+    @TableField("quantity")
+    private BigDecimal quantity;
 
     /**
      * 使用日期
@@ -61,16 +61,22 @@ public class UsageRecord implements Serializable {
     private String productBatch;
 
     /**
-     * 操作员ID
+     * 用户ID
      */
-    @TableField("operator")
-    private Long operator;
+    @TableField("user_id")
+    private Long userId;
 
     /**
-     * 状态：0-待审核，1-已审核
+     * 部门
      */
-    @TableField("status")
-    private Integer status;
+    @TableField("department")
+    private String department;
+
+    /**
+     * 添加剂名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String additiveName;
 
     /**
      * 备注

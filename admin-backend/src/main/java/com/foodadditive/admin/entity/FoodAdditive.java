@@ -43,6 +43,12 @@ public class FoodAdditive implements Serializable {
     private Long categoryId;
 
     /**
+     * 分类名称（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String categoryName;
+
+    /**
      * CAS号
      */
     @TableField("cas_number")
