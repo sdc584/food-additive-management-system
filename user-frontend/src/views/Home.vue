@@ -185,7 +185,15 @@ export default {
         'warnings': '/warning'
       }
       if (routeMap[index]) {
-        this.$router.push(routeMap[index])
+        // 避免重复导航到当前路由
+        if (this.$route.path !== routeMap[index]) {
+          this.$router.push(routeMap[index]).catch(err => {
+            // 忽略导航重复错误
+            if (err.name !== 'NavigationDuplicated') {
+              console.error(err)
+            }
+          })
+        }
       } else {
         this.$message.info(`功能开发中: ${index}`)
       }

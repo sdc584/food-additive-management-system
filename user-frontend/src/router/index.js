@@ -67,11 +67,29 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
 
   if (to.meta.requiresAuth && !token) {
-    next('/login')
+    // 避免重复导航到登录页
+    if (to.path !== '/login') {
+      next('/login')
+    } else {
+      next()
+    }
+  } else if (to.path === '/login' && token) {
+    // 已登录用户访问登录页，重定向到首页
+    next('/home')
   } else {
     next()
   }
 })
+
+// 解决 NavigationDuplicated 错误
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => {
+    if (err.name !== 'NavigationDuplicated') {
+      throw err
+    }
+  })
+}
 
 export default router
 
